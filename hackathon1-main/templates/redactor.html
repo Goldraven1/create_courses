@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document Title</title>
+</head>
+<body>
+<nav>
+    <button onclick="addPage()">add page</button>
+    <button onclick="deletePage()">delete page</button>
+    <button onclick="toggleAllPages()">view all pages</button>
+    <button onclick="deleteElement()">Delete Text</button>
+    <p id="pageCounter">page 1 out of 1</p>
+</nav>
+<input type="text" id="pageSwitcher">
+<button onclick="switchToPage()">edit page</button>
+<select name="element selector" id="elemSelector" onchange="selectorCheck(this.value)">
+    <option value="pg_name">Page Name</option>
+    <option value="textField">TextField</option>
+    <option value="image">image</option>
+    <option value="separator">separator</option>
+</select>
+<span id="course_id">{{course_id}}</span>
+<div id="textEditor">
+    <button onclick="commitText()">Commit</button>
+    <input id="textEditValue" type="text" placeholder="text">
+</div>
+<div id="imageEditor">
+    <button onclick="commitImage()">Commit</button>
+    <input id="imgEditValue" type="text" placeholder="image source">
+</div>
+<div id="SepEditor">
+    <button onclick="commitSeparator()">Commit</button>
+    <input id="sepHeight" type="text" placeholder="sepHeight">
+</div>
+<div id="pg_name">
+    <button onclick="commitPgName()">Commit</button>
+    <input id="pgEditValue" type="text" placeholder="pg name">
+    <input id="pgEditValueMargin" type="text" placeholder="pg margin">
+    <input id="pgEditValueFont" type="text" placeholder="pg fontSize">
+</div>
+
+<div id="preview">
+    <div style="border: 2px; border-style: solid; border-color: black;" class="page" id="page_1"><h1 class="pg_name" style="margin: 0px;">Page Number 1</h1><div style="bottom: 0;"><button onclick="window.location.href = '/{{courseID}}/page_2';">Вперед</button><button onclick="window.location.href = '/{{courseID}}/page_1';">Назад</button></div></div>
+</div>
+
+<script>
+    var currentPageID = 'page_1'; // Initialize the current page ID
+
+    // Function to toggle visibility of all pages
+    function toggleAllPages() {
+        const pages = document.getElementsByClassName("page");
+        for (let i = 0; i < pages.length; i++) {
+            pages[i].style.display = 'block';
+        }
+    }
+
+    function selectorCheck(value) {
+        const editors = document.querySelectorAll("#textEditor, #imageEditor, #SepEditor, #pg_name");
+        editors.forEach(editor => {
+            editor.style.display = 'none';
+        });
+        if (value == 'textField') {
+            element = document.getElementById('textEditor')
+            element.style.display = 'block'
+        } else if (value == 'image') {
+            element = document.getElementById('imageEditor')
+            element.style.display = 'block'
+        } else if (value == 'pg_name') {
+            element = document.getElementById('pg_name')
+            element.style.display = 'block'
+        } else if (value == 'separator') {
+            element = document.getElementById('SepEditor')
+            element.style.display = 'block'
+        }
+    }
+
+    function addPage() {
+        var course_id = document.getElementById(`course_id`).innerHTML
+        var previewElem = document.getElementById('preview');
+        const pages = document.getElementsByClassName("page");
+        var pages42 = pages.length + 1;
+        var counter = document.getElementById('pageCounter');
+        counter.innerHTML = `total of ${pages42} pages.`;
+        previewElem.innerHTML += `<div style="border: 2px; border-style: solid; border-color: black;" class="page" id="page_${pages42}" ><h1 class="pg_name" style='margin: 0px;'>Page Number ${pages42}</h1><div style="bottom: 0;"><button onclick(onclick="window.location.href = '/${course_id}/${currentPageID + 1}';")>Вперед</button><button onclick(onclick="window.location.href = '/${course_id}/${currentPageID - 1}';")>Назад</button></div></div>`;
+    }
+
+    function deletePage() {
+        const pageIDToDelete = document.getElementById('pageSwitcher').value;
+
+        // Check if the page exists and is not the first page
+        if (pageIDToDelete !== '1') {
+            const pageToDelete = document.getElementById('page_' + pageIDToDelete);
+
+            // Check if the page exists
+            if (pageToDelete) {
+                pageToDelete.parentNode.removeChild(pageToDelete);
+                const pages = document.getElementsByClassName("page");
+                var pages42 = pages.length;
+                var counter = document.getElementById('pageCounter');
+
+                // Update the page counter
+                counter.innerHTML = `total of ${pages42} pages.`;
+            } else {
+                alert("Page does not exist!");
+            }
+        } else {
+            alert("Cannot delete the first page!");
+        }
+    }
+
+    function switchToPage() {
+        currentPageID = document.getElementById('pageSwitcher').value;
+        const pages = document.getElementsByClassName("page");
+        for (let i = 0; i < pages.length; i++) {
+            if (pages[i].id == 'page_' + currentPageID) {
+                pages[i].style.display = 'block'; // Show the matching element
+            } else {
+                pages[i].style.display = 'none'; // Hide the non-matching elements
+            }
+        }
+    }
+
+    function commitText() {
+        var page = document.getElementById('page_' + currentPageID)
+        console.log(page)
+        console.log(currentPageID)
+        var text = document.getElementById('textEditValue').value
+        pElements = page.childNodes
+        page.innerHTML = page.innerHTML + `<p id = ${pElements.length + 1 + currentPageID}>${text}</p>`
+    }
+
+    function commitImage() {
+  // Get the page element
+  var page = document.getElementById('page_' + currentPageID);
+
+  // Get the image URL from the input field
+  var imgUrl = document.getElementById('imgEditValue').value;
+
+  // Get the next available image ID
+  pElements = page.childNodes
+      
+  // Create a new image element with the ID
+  page.innerHTML = page.innerHTML + `<img id="${(pElements.length + 1) + currentPageID}" src="${imgUrl}">`
+
+  // Optionally, add error handling for invalid image URLs or loading failures
+  newImg.onerror = function() {
+    // Handle error, e.g., display a placeholder image or error message
+  };
+
+  // Add the image element to the page
+  page.appendChild(newImg);
+}
+    function commitPgName() {
+        var page = document.getElementById('page_' + currentPageID);
+        var text = document.getElementById('pgEditValue').value;
+        var styleValue = document.getElementById('pgEditValueMargin').value;
+        var fontValue = document.getElementById('pgEditValueFont').value;
+        var elements = page ? page.getElementsByClassName('pg_name') : [];
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].innerHTML = text;
+            elements[i].style.margin = styleValue + 'px';
+            elements[i].style.fontSize = fontValue + 'px';
+        }
+    }
+
+    function commitSeparator() {
+        var page = document.getElementById('page_' + currentPageID)
+        var text = document.getElementById('sepHeight').value
+        page.style.margin = text
+        pElements = page.childNodes
+        page.innerHTML = page.innerHTML + `<div id="${(pElements.length + 1) + currentPageID}"style="height: ${text}vh;"></div>`
+    }
+
+    function deleteElement(elementType) {
+        
+        let elementIDToDelete = null;
+        elementIDToDelete = prompt("Enter the ID of the text element to delete:");
+        var elemId = elementIDToDelete
+        console.log(elemId)
+        let elementToDelete = document.getElementById(elemId);
+        console.log(elementToDelete)
+        if (elementToDelete) {
+            elementToDelete.remove(); // Безопасное удаление элемента
+    
+            // Если удаленный элемент - изображение, переименовываем оставшиеся изображения
+            if (elementType === 'image') {
+    const remainingImageElements = page.querySelectorAll('img');
+    remainingImageElements.forEach((element, index) => {
+      element.id = 'i_' + (index + 1); // Update IDs starting from 1
+    });
+  }
+    
+            // Если удаленный элемент - текст, переименовываем оставшиеся текстовые элементы
+            if (elementType === 'text') {
+                const remainingTextElements = page.querySelectorAll('p');
+                remainingTextElements.forEach((element, index) => {
+                    element.id = 'text_' + (index + 1);
+                });
+            }
+            
+            // Обновляем счетчик страниц
+            const pages = document.getElementsByClassName("page");
+            var pages42 = pages.length;
+            var counter = document.getElementById('pageCounter');
+        } else {
+            alert(`${elementType} element not found!`);
+        }
+    }
+</script>
+    <script>
+    function createnewWebSocket() {
+        // Шаг 1: Создаем соединение WebSocket
+        var socket = new WebSocket('ws://localhost:42125');
+
+        // Шаг 2: Устанавливаем обработчики событий
+        socket.onopen = function(event) {
+            console.log('Соединение WebSocket установлено.');
+            console.log('Успешно: Соединение WebSocket установлено.');
+        };
+
+        socket.onerror = function(error) {
+            console.log('Ошибка WebSocket: ' + error);
+            console.log('Неуспешно: Не удалось установить соединение WebSocket.');
+        };
+
+        // Шаг 3: Прослушиваем сообщения и отправляем данные в базу данных
+        socket.onmessage = function(event) {
+            console.log('Получено сообщение WebSocket: ' + event.data);
+
+            // Разбираем данные (предполагается, что они в формате JSON)
+            var data = JSON.parse(event.data);
+
+            // Отправляем данные в базу данных
+            // Это будет зависеть от вашей конкретной настройки базы данных
+            // Вот общий пример:
+            try {
+                database.insert(data);
+                console.log('Успешно: Данные успешно отправлены в базу данных.');
+            } catch (error) {
+                console.log('Неуспешно: Не удалось отправить данные в базу данных.');
+                console.log('Ошибка: ' + error);
+            }
+        };
+    }
+</script>
+
+</body>
+</html>
