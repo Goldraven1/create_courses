@@ -1,7 +1,7 @@
 {
-    "host": "95.31.138.156",
-    "port": "54320",
-    "password": "111LZo0l4S7dzO0PXA3KOkasw2rcMtO46hY2FbUPxS",
-    "dbname": "hackathonusers",
-    "user": "postgres"
+    "host": "",
+    "port": "",
+    "password": "",
+    "dbname": "",
+    "user": ""
 }
