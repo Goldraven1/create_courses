@@ -1,0 +1,11 @@
+Flask==2.2.3
+Flask-SocketIO==5.3.3
+psycopg2-binary==2.9.5
+flask-login==0.6.2
+flask-mail==0.9.1
+flask-limiter==3.3.0
+flask-ipban==0.9.12
+itsdangerous==2.1.2
+PyJWT==2.6.0
+prometheus-client==0.17.1
+prometheus-flask-exporter==0.22.4

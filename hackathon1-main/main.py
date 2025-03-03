@@ -24,6 +24,9 @@ from flask_ipban import IpBan
 from itsdangerous import URLSafeTimedSerializer
 import configus
 import uuid
+from prometheus_client import Counter, Histogram, Gauge
+from prometheus_flask_exporter import PrometheusMetrics
+
 jwt_instance = jwt
 email_pattern = r"^[a-z0-9](\.?[a-z0-9]){5,}@g(oogle)?mail\.com$"
 username_pattern = r"^[a-zA-Z0-9]{4,10}$"
@@ -48,6 +51,27 @@ app.config['MAIL_USERNAME'] = 'support@funckenobi42.space'
 app.config['MAIL_PASSWORD'] = '4242512'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+
+# Инициализируем метрики Prometheus
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.0')
+
+# Добавляем пользовательские метрики
+http_requests_total = Counter(
+    'http_requests_total', 
+    'Total HTTP Requests Count', 
+    ['method', 'endpoint', 'status']
+)
+http_request_duration = Histogram(
+    'http_request_duration_seconds', 
+    'HTTP Request Duration', 
+    ['method', 'endpoint']
+)
+active_users_gauge = Gauge(
+    'active_users', 
+    'Number of active users currently logged in'
+)
+
 def get_real_ip():
     return request.access_route[0]
 
@@ -136,8 +160,19 @@ class User(UserMixin):
 def load_user(user_id):
     return User.get(user_id)
 
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        active_users_gauge.inc()
+
+@app.teardown_request
+def teardown_request(exception=None):
+    if current_user.is_authenticated:
+        active_users_gauge.dec()
+
 @app.route("/")
 @limiter.limit("500 per hour",error_message='You have been ratelimited, and banned.')
+@http_request_duration.labels('GET', '/')
 def main():
     connlog()
     if current_user.is_authenticated:
@@ -149,6 +184,7 @@ def main():
     else:
          username = 'Странник'
          role = None
+    http_requests_total.labels('GET', '/', '200').inc()
     return render_template("index.html", user=username, role=role)
 
 @app.route("/course_editor")
@@ -523,4 +559,8 @@ def ponger():
 # t.start()
 
 if __name__ == "__main__":
-    socketio.run(app, host='192.168.0.50', port=42125)
+    # Получаем переменные окружения или используем значения по умолчанию
+    host = os.environ.get('HOST', '0.0.0.0')
+    port = int(os.environ.get('PORT', 42125))
+    
+    socketio.run(app, host=host, port=port, debug=False)
